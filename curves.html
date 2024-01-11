@@ -18,7 +18,6 @@
             border-radius: 3px;
         }
         .flyable {
-            border: 2px solid #fa3;
             border-radius: 5px;
             width: 100px;
             height: 100px;
@@ -28,22 +27,33 @@
             color: #fed;
             padding: 2vw;
         }
+        #orbiter {
+            border: 32px ridge #fa3;
+        }
         #revolver {
-            border: 2px solid #0099ff;
+            border: 8px dotted #0099ff;
             border-radius: 50%;
+        }
+        #meanderer {
+            border-width: 48px;
+            border-style: dashed double;
+            border-radius: 30%;
+            color: #000;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <main>
         <div class="flyable" id="orbiter">An orbiting div!</div>
-        <div class="flyable" id="revolver">A second revolving element!</div>
+        <div class="flyable" id="revolver">A second, revolving element!</div>
+        <div class="flyable" id="meanderer">A third, meandering object!</div>
     </main>
 
     <script>
         const delta_t = 0.015625;// 0.0078125;
         const radius = 600;
-        const [fo_0, fo_1] = [...document.querySelectorAll('div.flyable')];
+        const [fo_0, fo_1, fo_2] = [...document.querySelectorAll('div.flyable')];
         let t = 0;
         requestAnimationFrame(_ => fly(fo_0, t));
         
@@ -57,6 +67,7 @@
             element.style.top = `${y + half_viewport_h}px`;
             requestAnimationFrame(_ => {
                 const t_new = t + delta_t;
+                meander(fo_2, t_new);
                 wander(fo_1, t_new);
                 fly(fo_0, t_new);
             });
@@ -72,7 +83,28 @@
             // console.log("t, [x, y]: ", `${t}, [${x}, ${y}]`);
             element.style.left = `${x + half_viewport_w}px`;
             element.style.top = `${y + half_viewport_h}px`;
+            // Extra fun...
+            element.style.transform = `rotate(${t * 5}deg)`;
         }
+
+        function meander(element, t) {
+            const container = element.parentElement;
+            const half_viewport_w = container.clientWidth / 2;
+            const half_viewport_h = container.clientHeight / 2;
+            const [x, y] = trig_grid(t);
+            element.style.left = `${x + half_viewport_w}px`;
+            element.style.top = `${y + half_viewport_h}px`;
+            // Extra fun...
+            element.style.backgroundColor = `hsl(${t * 10 % 360}, 50%, 50%)`;
+            element.style.borderColor = `hsl(${t * 10 % 360 - 180}, 50%, 50%)`;
+        }
+
+        // =============================================================================================
+        
+        const circle = (r, t) => [
+            r * Math.cos(-t),
+            r * Math.sin(-t)
+        ];
 
         const hypocycloid = (a, b, amp, t) => {
             const r = a - b;
@@ -84,10 +116,13 @@
             ]
         };
 
-        const circle = (r, t) => [
-            r * Math.cos(-t),
-            r * Math.sin(-t)
-        ];
+        const trig_grid = t => {
+            const amplitude = 400;
+            return [            
+                amplitude * Math.sin(3 * Math.PI * t / 10),
+                amplitude * Math.cos(5 * Math.PI * t / 10)
+            ];
+        };
     </script>
 
 </body>
