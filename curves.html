@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Playing with elements moving along curves">
+    <meta name="author" content="John Lynch">
+    <title>Curves</title>
+    <style>
+        body, * {
+            background-color: #000;
+            margin: 1vh auto;
+        }
+        main {
+            width: 96vw;
+            height: 96vh;
+            border: 3px solid #4ce;
+            border-radius: 3px;
+        }
+        .flyable {
+            border: 2px solid #fa3;
+            border-radius: 5px;
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            font-size: 21px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #fed;
+            padding: 2vw;
+        }
+        #revolver {
+            border: 2px solid #0099ff;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="flyable" id="orbiter">An orbiting div!</div>
+        <div class="flyable" id="revolver">A second revolving element!</div>
+    </main>
+
+    <script>
+        const delta_t = 0.015625;// 0.0078125;
+        const radius = 600;
+        const [fo_0, fo_1] = [...document.querySelectorAll('div.flyable')];
+        let t = 0;
+        requestAnimationFrame(_ => fly(fo_0, t));
+        
+        function fly(element, t) {
+            const container = element.parentElement;
+            const half_viewport_w = container.clientWidth / 2;
+            const half_viewport_h = container.clientHeight / 2;
+            const [x, y] = circle(250 + 250 * Math.sin(t * 0.25), t);
+            // console.log("t, [x, y]: ", `${t}, [${x}, ${y}]`);
+            element.style.left = `${x + half_viewport_w}px`;
+            element.style.top = `${y + half_viewport_h}px`;
+            requestAnimationFrame(_ => {
+                const t_new = t + delta_t;
+                wander(fo_1, t_new);
+                fly(fo_0, t_new);
+            });
+        }
+
+        function wander(element, t) {
+            const amplitude = 60;
+            const container = element.parentElement;
+            const half_viewport_w = container.clientWidth / 2;
+            const half_viewport_h = container.clientHeight / 2;
+            // const [x, y] = hypocycloid(5 * Math.PI, 3, amplitude, t);
+            const [x, y] = hypocycloid(6 + 3 * Math.cos(t / 4), 3 - 2 * Math.sin(t / 4), amplitude, t);
+            // console.log("t, [x, y]: ", `${t}, [${x}, ${y}]`);
+            element.style.left = `${x + half_viewport_w}px`;
+            element.style.top = `${y + half_viewport_h}px`;
+        }
+
+        const hypocycloid = (a, b, amp, t) => {
+            const r = a - b;
+            const p = r / b;
+            const ASP = 1.4;
+            return [
+                ASP * amp * r * Math.cos(t) + b * Math.cos(p * t),
+                amp * r * Math.sin(t) - b * Math.sin(p * t)
+            ]
+        };
+
+        const circle = (r, t) => [
+            r * Math.cos(-t),
+            r * Math.sin(-t)
+        ];
+    </script>
+
+</body>
+</html>
