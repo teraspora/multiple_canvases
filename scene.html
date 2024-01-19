@@ -36,7 +36,7 @@
     </div>
     <!-- <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script> -->
     <script>
-        let DEBUG = true;
+        let DEBUG = false;
         const rand_int = n => Math.floor(n * Math.random());
         const rand_in_range = (m, n) => Math.floor((n - m) * Math.random() + m);
 
@@ -52,10 +52,13 @@
                 this.ctx = this.canvas.getContext("2d");
                 this.width = this.canvas.width;
                 this.height = this.canvas.height;
+                this.progress = 0;
+                this.progress_delta = 0.02;
             }
             render() {
             }
             update(t) {
+                this.progress += this.progress_delta;
             }
             test() {
                 // Draw something simple and small, just to verify canvas drawability!
@@ -78,11 +81,33 @@
                     a * Math.cos(t),
                     b * Math.sin(t)
                 ],
-                trig_grid: t => {
+                trig_grid: (p, q, t) => {
                     const amplitude = 200;
                     return [            
-                        amplitude * Math.sin(3 * Math.PI * t / 10),
-                        amplitude * Math.cos(5 * Math.PI * t / 10)
+                        amplitude * Math.sin(p * Math.PI * t / 10),
+                        amplitude * Math.cos(q * Math.PI * t / 10)
+                    ]
+                },
+                hcrr: (R, r, amp, t) => {
+                    const s = R - r;
+                    return [
+                        amp * (s * Math.cos(t) + r * Math.cos(s / r * t)),
+                        amp * (s * Math.sin(t) - r * Math.sin(s / r * t))
+                    ]
+                },
+                hypocycloid: (a, b, amp, t) => {
+                    const r = a - b;
+                    const p = r / b;
+                    return [
+                    amp * r * Math.cos(t) + b * Math.cos(p * t),
+                    amp * r * Math.sin(t) - b * Math.sin(p * t)
+                    ]
+                },
+                spiral: (r, density, t) => {
+                    const r_ = r * (density * Math.PI - t) / (density * Math.PI);
+                    return [
+                        r_ * Math.cos(-t),
+                        r_ * Math.sin(-t)
                     ];
                 }
             };
@@ -91,26 +116,32 @@
             constructor(canvas, curve, params, thickness) {
                 super(canvas);
                 this.ctx.lineWidth = thickness;
-                this.curve = CurveScene.curves[curve];
+                this.curve_name = curve;
+                this.curve = CurveScene.curves[this.curve_name];
                 this.params = params;
                 this.x_previous = 0;
                 this.y_previous = 0;
+                this.hue_initial = Math.random() * 360;
             }
 
             render() {
                 // Called by user subsequent to instantiation.   Kicks off the animation.
-                console.log('In render():\n', this);
                 const [x, y] = this.curve(...this.params, 0);
                 this.x_previous = x + this.width / 2;
                 this.y_previous = y + this.height / 2;
+                this.ctx.font = "20px monospace"
+                this.ctx.fillStyle = '#4df';
+                this.ctx.fillText(this.curve_name, this.width - 180, this.height - 50);
+                this.ctx.fillText(`(${this.params})`, this.width - 18 * this.params.toString().length - 20, this.height - 20);
                 requestAnimationFrame(this.update.bind(this));
             }
 
-            update(t) {
+            update() {
                 // Called for every repaint, by requestAnimationFrame()
-                const [x, y] = this.curve(...this.params, t / 1000);
+                super.update();
+                const [x, y] = this.curve(...this.params, this.progress);
                 const [x_next, y_next] = [x + this.width / 2, y + this.height / 2];
-                this.ctx.strokeStyle = `hsl(${rand_int(360) - t / 32} 100% 50%)`;
+                this.ctx.strokeStyle = `hsl(${this.hue_initial + this.progress * 100} 100% 50%)`;
                 this.ctx.moveTo(this.x_previous, this.y_previous);
                 this.ctx.lineTo(x_next, y_next);
                 [this.x_previous, this.y_previous] = [x_next, y_next];
@@ -121,15 +152,15 @@
         }
 
         // Top-level code
+        let canvas_count = 9; // must be a perfect square!
         const scenes = [];
-        const CANVAS_COUNT = 4; // must be a perfect square!
-        const cols = Math.sqrt(CANVAS_COUNT);
+        const cols = Math.sqrt(canvas_count);
         const main = document.getElementById('main');
         main.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
         const {width: main_width, height: main_height} = main.getBoundingClientRect();
         
         // Create an array of canvases and add each one to the DOM
-        const canvases = Array(CANVAS_COUNT).fill(0).map((_, i) => {
+        const canvases = Array(canvas_count).fill(0).map((_, i) => {
             const c = document.createElement('canvas');
             c.id = `canvas-${i}`;
             c.width = main_width / cols - 50;
@@ -140,24 +171,42 @@
 
         // For each canvas, create a new Scene, and push the new Scene to an array of scenes.
         let curve, params;
-        const curves = ['rhodonea', 'ellipse', 'trig_grid', 'rhodonea'];
-        canvases.forEach((canvas, i) => {
+        canvases.forEach(canvas => {
+            let amp, k, a, b, r, density;
+            const i = rand_int(6);
             switch(i) {
+                case 0:
+                    curve = 'hcrr';
+                    params = [2 * Math.PI, 2, rand_in_range(32, 64)];
+                    break;
                 case 1:
-                    const a = rand_in_range(3, 120);
-                    const b = rand_in_range(3, 120);
-                    curve = 'ellipse';
-                    params = [a, b];
+                    r = rand_in_range(128, 192);
+                    density = rand_in_range(12, 64);
+                    curve = 'spiral';
+                    params = [r, density];
                     break;
                 case 2:
                     curve = 'trig_grid';
-                    params = [];
+                    params = [rand_in_range(3, 16), rand_in_range(3, 16)];
                     break;
-                default:
-                    const k = rand_in_range(1, 13) / rand_in_range(1, 23);
-                    const amp = rand_in_range(60, 120);
+                case 3:
+                    k = rand_in_range(1, 13) / rand_in_range(1, 23);
+                    amp = rand_in_range(150, 200);
                     curve = 'rhodonea';
                     params = [k, amp];
+                    break;
+                case 4:
+                    a = rand_in_range(1, 6);
+                    b = rand_in_range(1, 6);
+                    amp = rand_in_range(20, canvas.width / 6);
+                    curve = 'hypocycloid';
+                    params = [a, b, amp] ;
+                    break;
+                default:
+                    a = rand_in_range(30, 120);
+                    b = rand_in_range(30, 120);
+                    curve = 'ellipse';
+                    params = [a, b];
                 }
 
             const s = new CurveScene(canvas, curve, params, rand_in_range(2, 5));
@@ -168,13 +217,24 @@
             }
         });
 
+        window.addEventListener('keyup', event => {
+            if (!event.ctrlKey && !event.altKey) {
+                const char = event.key.toUpperCase();
+                switch(char) {
+                    case '4':
+                    case '9':
+                        canvas_count = Number(char);
+                        location.reload();
+                        break;
+                    default:
+                }
+            }
+        });
+
         // Render scenes in a separate loop, as we may want this to be separate from scene creation in the future.
         for (scene of scenes) {
             scene.render();
         }
-
-            // NEXT TO DO: 
-            // Pass animation code to scene constructor
 
     </script>
 
