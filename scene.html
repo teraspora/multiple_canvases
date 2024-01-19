@@ -35,7 +35,7 @@
     </div>
     <!-- <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script> -->
     <script>
-
+        let DEBUG = true;
         class Scene {
             constructor(canvas) {
                 this.canvas = canvas;
@@ -65,8 +65,36 @@
         canvases.forEach(c => {
             const s = new Scene(c);
             scenes.push(s);
-            s.test();
+            if (DEBUG) {
+                s.test();
+            }
         });
+
+        // Scene 0
+        const scene = scenes[0];
+        const k = 8 / 7;
+        const amp = 60;
+        const rhodonea = (k, amp, t) => [
+            amp * Math.cos(k * t + t) * Math.cos(t),
+            amp * Math.cos(k * t + t) * Math.sin(t),
+        ];
+        const [x, y] = rhodonea(k, amp, 0);
+        let x_old = x + scene.width / 2;
+        let y_old = y + scene.height / 2;
+
+        function update(t) {
+            const [x, y] = rhodonea(k, amp, t / 1000);
+            const [x_new, y_new] = [x + scene.width / 2, y + scene.height / 2];
+            scene.ctx.strokeStyle = `hsl(${360 - t / 32} 100% 50%)`;
+            scene.ctx.moveTo(x_old, y_old);
+            scene.ctx.lineTo(x_new, y_new);
+            // ctx.strokeRect(x_old, y_old, 1, 1);
+            [x_old, y_old] = [x_new, y_new];
+            scene.ctx.stroke();
+            scene.ctx.beginPath();            
+            requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
     </script>
 
 </body>
