@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Playing with elements moving along curves">
+    <meta name="author" content="John Lynch">
+    <title>Multiple Canvas Scenes</title>
+    <link rel="icon" href="data:,">
+    <style>
+        html, body, * {
+            background-color: #000;
+            margin: 0 auto;
+            text-align: center;
+            overflow: hidden;
+        }
+        #main {
+            display: grid;
+            width: 95vw;
+            height: 95vh;
+            gap: 30px;
+            justify-content: space-around;
+            align-content: space-around;
+            /* border: 2px solid #f00; */
+            margin: 8vw auto;
+        }
+        canvas {
+            border: 6px ridge #ff9900;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+
+    </div>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19"></script> -->
+    <script>
+
+        class Scene {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = this.canvas.getContext("2d");
+                this.width = this.canvas.width;
+                this.height = this.canvas.height;
+            }
+            test() {
+                this.ctx.fillStyle = `hsl(${Math.random() * 360} 100% 50%)`;
+                this.ctx.fillRect(16, 16, 64, 64);
+            }
+        }
+        const scenes = [];
+        const CANVAS_COUNT = 9; // must be a perfect square!
+        const cols = Math.sqrt(CANVAS_COUNT);
+        const main = document.getElementById('main');
+        main.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        const {width: main_width, height: main_height} = main.getBoundingClientRect();
+        const canvases = Array(CANVAS_COUNT).fill(0).map((_, i) => {
+            const c = document.createElement('canvas');
+            c.id = `canvas-${i}`;
+            c.width = main_width / cols - 50;
+            c.height = main_height / cols - 50;
+            main.appendChild(c);
+            return c;
+        });
+        canvases.forEach(c => {
+            const s = new Scene(c);
+            scenes.push(s);
+            s.test();
+        });
+    </script>
+
+</body>
+</html>
