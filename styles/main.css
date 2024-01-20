@@ -1,0 +1,39 @@
+html, body, * {
+    background-color: #000;
+    margin: 0 auto;
+    text-align: center;
+    overflow: hidden;
+    font-family: 'Courier New', Courier, monospace;
+}
+#main {
+    display: grid;
+    width: 95vw;
+    height: 95vh;
+    gap: 30px;
+    justify-content: space-around;
+    align-content: space-around;
+    border: 2px solid #333;
+    margin: 1vw auto;
+}
+canvas {
+    border: 1px ridge #7a7265;
+    border-radius: 5px;
+}
+aside#help {
+    position: fixed;
+    left: 40vw;
+    top: 30vh;
+    padding: 1vw;
+    background-color: #222;
+    color: #fda;
+    border: 1px solid #00ccff;
+    border-radius: 5px;
+    width: 30em;
+    height: 5em;
+    display: none;
+}
+.close {
+    position: absolute;
+    right: 2vw;
+    top: 1vw;
+}
