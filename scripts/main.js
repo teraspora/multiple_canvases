@@ -192,6 +192,8 @@ let DEBUG = false;
             }
         });
 
+        window.addEventListener('resize', init);
+
         function init() {
             const scenes = [];
             const cols = Math.sqrt(canvas_count);
