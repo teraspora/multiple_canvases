@@ -129,6 +129,7 @@ class CurveScene extends Scene {
 
     render() {
         // Called by user subsequent to instantiation.   Kicks off the animation.
+        super.render();
         const [x, y] = this.curve(...this.params, 0);
         this.x_previous = x + this.width / 2;
         this.y_previous = y + this.height / 2;
@@ -170,6 +171,8 @@ class AtomScene extends Scene {
         // Do initial stuff to prepare for particle madness
         // using this.ctx.blah.blah...
         // ...Hmmm, nothing to do at the moment, really!
+        // ...but to be future-proof, let's call super.render():  even though it does nothing atm, it might do in the future...
+        super.render();
         requestAnimationFrame(this.update.bind(this));
     }
 
