@@ -59,10 +59,6 @@ class CurveScene extends Scene {
             amp * Math.cos(k * t + t) * Math.cos(t),
             amp * Math.cos(k * t + t) * Math.sin(t),
         ],
-        sine: (amp, freq, offset_x, t) => [
-            (amp - offset_x) * t,
-            amp * Math.sin(freq * t)
-        ],
         ellipse: (a, b, t) => [
             a * Math.cos(t),
             b * Math.sin(t)
@@ -163,8 +159,6 @@ class CurveScene extends Scene {
 }
 
 class AtomScene extends Scene {
-    // Jan. 20th: just set up initial structure of class
-    static instance_count = 0;
     constructor(canvas, atoms) {
         super(canvas);
         this.atoms = atoms;
@@ -175,6 +169,7 @@ class AtomScene extends Scene {
         // Called by user subsequent to instantiation.   Kicks off the animation.
         // Do initial stuff to prepare for particle madness
         // using this.ctx.blah.blah...
+        // ...Hmmm, nothing to do at the moment, really!
         requestAnimationFrame(this.update.bind(this));
     }
 
@@ -214,7 +209,9 @@ class AtomScene extends Scene {
             const proximity = Math.hypot((atom_b.position.x - atom_a.position.x) * this.width, (atom_b.position.y - atom_a.position.y) * this.height);
             if (proximity < Math.min(atom_a.gravity, atom_b.gravity)) {
                 this.ctx.lineWidth = 1;
-                this.ctx.strokeStyle = this.colour_connections ? `lch(50% 132 ${rand_int(360)} / ${Math.floor(100 - Math.min(proximity, 100))}%)` : `rgb(255 255 255 / ${Math.floor(100 - Math.min(proximity, 100))}%)`;
+                this.ctx.strokeStyle = this.colour_connections
+                    ? `lch(50% 132 ${rand_int(360)} / ${Math.floor(100 - Math.min(proximity, 100))}%)`
+                    : `rgb(255 255 255 / ${Math.floor(100 - Math.min(proximity, 100))}%)`;
                 this.ctx.beginPath();
                 this.ctx.moveTo(atom_a.position.x * this.width, atom_a.position.y * this.height);
                 this.ctx.lineTo(atom_b.position.x * this.width, atom_b.position.y * this.height);
@@ -249,6 +246,7 @@ window.addEventListener('keyup', event => {
             switch(char) {
                 // 
                 case 'c':
+                    // 'c' is standard for toggling subtitles on Youtube, so...
                     toggle_curve_info();
                     init()
                     break;
@@ -282,7 +280,7 @@ function init() {
     let curve, params;
     canvases.forEach(canvas => {
         let amp, k, a, b, c, r, density, freq, x_wobble_amp, y_wobble_amp, x_wobble_freq, y_wobble_freq, offset_x;
-        let i = rand_int(32);
+        let i = rand_int(24);
         if (i < 16) {
             // Create a Curve Scene
             switch(i) {
@@ -290,6 +288,7 @@ function init() {
                     curve = 'hcrr';
                     params = [Math.random() * 10, Math.random() * 4, rand_in_range(16, 32)];
                     break;
+                case 5:
                 case 7:
                     curve = 'wobbly_hcrr';
                     params = [Math.random() * 10, Math.random() * 6, rand_in_range(32, 48)];
@@ -326,13 +325,6 @@ function init() {
                     amp = Math.random() + 0.2;
                     curve = 'hypocycloid';
                     params = [a, b, amp] ;
-                    break;
-                case 5:
-                    amp = rand_in_range(20, canvas.height / 2);
-                    freq = rand_in_range(1, 16);
-                    offset_x = -canvas.width / 2;
-                    curve = 'sine';
-                    params = [amp, freq, offset_x];
                     break;
                 default:
                     curve = 'unknown';
