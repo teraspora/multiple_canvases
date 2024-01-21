@@ -100,6 +100,13 @@ let DEBUG = false;
                         r_ * Math.cos(-t),
                         r_ * Math.sin(-t)
                     ];
+                },
+                unknown: (a, b, c, d, e, f, g, amp, t) => {
+                    const t_ = t / 10;
+                    return [
+                        amp * (Math.cos(a * t_) + Math.cos(b * t_) / d + Math.sin(c * t_) / e),
+                        amp * (Math.sin(a * t_) + Math.sin(b * t_) / f + Math.cos(c * t_) / g)
+                    ];
                 }
             };
             // =========================================
@@ -122,6 +129,8 @@ let DEBUG = false;
                 this.y_previous = y + this.height / 2;
                 this.ctx.font = "16px monospace"
                 this.ctx.fillStyle = '#4df';
+                this.ctx.shadowColor = "#fda";
+                this.ctx.shadowOffsetX = 2;
                 this.ctx.fillText(this.curve_name, this.width - 120, this.height - 50);
                 this.ctx.fillText(`(${this.params})`, this.width - 12 * this.params.toString().length - 20, this.height - 20);
                 requestAnimationFrame(this.update.bind(this));
@@ -204,8 +213,9 @@ let DEBUG = false;
             // For each canvas, create a new Scene, and push the new Scene to an array of scenes.
             let curve, params;
             canvases.forEach(canvas => {
-                let amp, k, a, b, r, density, freq, x_wobble_amp, y_wobble_amp, x_wobble_freq, y_wobble_freq;
-                const i = rand_int(8);
+                let amp, k, a, b, c, r, density, freq, x_wobble_amp, y_wobble_amp, x_wobble_freq, y_wobble_freq;
+                let i = rand_int(16);
+                // i = 8;
                 switch(i) {
                     case 0:
                         curve = 'hcrr';
@@ -255,14 +265,26 @@ let DEBUG = false;
                         params = [amp, freq];
                         break;
                     default:
-                        a = rand_in_range(30, 120);
-                        b = rand_in_range(30, 120);
-                        curve = 'ellipse';
-                        params = [a, b];
+                        curve = 'unknown';
+                        params = [
+                            rand_in_range(-100, 100), 
+                            rand_in_range(-100, 100), 
+                            rand_in_range(-100, 100), 
+                            rand_in_range(1, 5), 
+                            rand_in_range(1, 5), 
+                            rand_in_range(1, 5), 
+                            rand_in_range(1, 5),  
+                            rand_in_range(40, canvas.width / 3)
+                        ];
                         break;
+                        // a = rand_in_range(30, 120);
+                        // b = rand_in_range(30, 120);
+                        // curve = 'ellipse';
+                        // params = [a, b];
+                        // break;
                     }
 
-                const s = new CurveScene(canvas, curve, params, rand_in_range(2, 5));
+                const s = new CurveScene(canvas, curve, params, rand_in_range(1, 3));
                 // const s = new AtomScene(canvas, atoms);
                 scenes.push(s);
                 if (DEBUG) {
@@ -272,7 +294,7 @@ let DEBUG = false;
             });
             
             // Render scenes in a separate loop, as we may want this to be separate from scene creation in the future.
-            for (scene of scenes) {
+            for (const scene of scenes) {
                 scene.render();
             }
         }
