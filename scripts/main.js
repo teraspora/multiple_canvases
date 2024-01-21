@@ -284,7 +284,7 @@ let DEBUG = false;
                         // break;
                     }
 
-                const s = new CurveScene(canvas, curve, params, rand_in_range(1, 3));
+                const s = new CurveScene(canvas, curve, params, canvas_count < 5 ? 1 : rand_in_range(1, 3));
                 // const s = new AtomScene(canvas, atoms);
                 scenes.push(s);
                 if (DEBUG) {
