@@ -4,6 +4,8 @@
 let DEBUG = false;
 const rand_int = n => Math.floor(n * Math.random());
 const rand_in_range = (m, n) => Math.floor((n - m) * Math.random() + m);
+let show_curve_info = true;
+const toggle_curve_info = _ => show_curve_info = !show_curve_info;
 
 class Atom {
     // position and velocity should be abjects with keys x and y;
@@ -57,8 +59,8 @@ class CurveScene extends Scene {
             amp * Math.cos(k * t + t) * Math.cos(t),
             amp * Math.cos(k * t + t) * Math.sin(t),
         ],
-        sine: (amp, freq, t) => [
-            amp * t,
+        sine: (amp, freq, offset_x, t) => [
+            (amp - offset_x) * t,
             amp * Math.sin(freq * t)
         ],
         ellipse: (a, b, t) => [
@@ -134,12 +136,14 @@ class CurveScene extends Scene {
         const [x, y] = this.curve(...this.params, 0);
         this.x_previous = x + this.width / 2;
         this.y_previous = y + this.height / 2;
-        this.ctx.font = "16px monospace"
-        this.ctx.fillStyle = '#4df';
-        this.ctx.shadowColor = "#fda";
-        this.ctx.shadowOffsetX = 2;
-        this.ctx.fillText(this.curve_name, this.width - 120, this.height - 50);
-        this.ctx.fillText(`(${this.params})`, this.width - 12 * this.params.toString().length - 20, this.height - 20);
+        if (show_curve_info) {
+            this.ctx.font = "16px monospace";
+            this.ctx.fillStyle = '#4df';
+            this.ctx.shadowColor = "#fda";
+            this.ctx.shadowOffsetX = 2;
+            this.ctx.fillText(this.curve_name, this.width - 120, this.height - 50);
+            this.ctx.fillText(`(${this.params})`, this.width - 12 * this.params.toString().length - 20, this.height - 20);
+        }
         requestAnimationFrame(this.update.bind(this));
     }
 
@@ -241,6 +245,16 @@ window.addEventListener('keyup', event => {
             canvas_count = digit * digit;
             init();
         }
+        else {
+            switch(char) {
+                // 
+                case 'c':
+                    toggle_curve_info();
+                    init()
+                    break;
+                default:
+            }
+        }
     }
 });
 
@@ -267,7 +281,7 @@ function init() {
     // For each canvas, create a new Scene, and push the new Scene to an array of scenes.
     let curve, params;
     canvases.forEach(canvas => {
-        let amp, k, a, b, c, r, density, freq, x_wobble_amp, y_wobble_amp, x_wobble_freq, y_wobble_freq;
+        let amp, k, a, b, c, r, density, freq, x_wobble_amp, y_wobble_amp, x_wobble_freq, y_wobble_freq, offset_x;
         let i = rand_int(32);
         if (i < 16) {
             // Create a Curve Scene
@@ -314,10 +328,11 @@ function init() {
                     params = [a, b, amp] ;
                     break;
                 case 5:
-                    amp = rand_in_range(20, canvas.width / 6);
-                    freq = rand_in_range(1, 12);
+                    amp = rand_in_range(20, canvas.height / 2);
+                    freq = rand_in_range(1, 16);
+                    offset_x = -canvas.width / 2;
                     curve = 'sine';
-                    params = [amp, freq];
+                    params = [amp, freq, offset_x];
                     break;
                 default:
                     curve = 'unknown';
