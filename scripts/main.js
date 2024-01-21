@@ -195,8 +195,8 @@ let DEBUG = false;
             const canvases = Array(canvas_count).fill(0).map((_, i) => {
                 const c = document.createElement('canvas');
                 c.id = `canvas-${i}`;
-                c.width = main_width / cols - 50;
-                c.height = main_height / cols - 50;
+                c.width = main_width / cols - 10;
+                c.height = main_height / cols - 10;
                 main.appendChild(c);
                 return c;
             });

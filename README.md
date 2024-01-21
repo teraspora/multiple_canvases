@@ -6,3 +6,5 @@
 - This is very much a prototype, much more incredibly awesome functionality will follow!
 - Deployed to \<Watch this Space!\>
 - Press a digit key `n` (`1` to `9`) to change the resolution and display n<sup>2</sup> canvases.
+
+![](media/multiple_canvases_screenshot.png)
