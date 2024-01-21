@@ -50,7 +50,6 @@ class Scene {
     }
 }
 
-
 class CurveScene extends Scene {            
     // Curves
     static curves = {
@@ -211,7 +210,7 @@ class AtomScene extends Scene {
             const proximity = Math.hypot((atom_b.position.x - atom_a.position.x) * this.width, (atom_b.position.y - atom_a.position.y) * this.height);
             if (proximity < Math.min(atom_a.gravity, atom_b.gravity)) {
                 this.ctx.lineWidth = 1;
-                this.ctx.strokeStyle = this.colour_connections ? `lch(50% 132 ${rand_int(360)} / ${Math.floor(100 - Math.min(proximity, 100))}%)` : '#fff';
+                this.ctx.strokeStyle = this.colour_connections ? `lch(50% 132 ${rand_int(360)} / ${Math.floor(100 - Math.min(proximity, 100))}%)` : `rgb(255 255 255 / ${Math.floor(100 - Math.min(proximity, 100))}%)`;
                 this.ctx.beginPath();
                 this.ctx.moveTo(atom_a.position.x * this.width, atom_a.position.y * this.height);
                 this.ctx.lineTo(atom_b.position.x * this.width, atom_b.position.y * this.height);
@@ -271,6 +270,7 @@ function init() {
         let amp, k, a, b, c, r, density, freq, x_wobble_amp, y_wobble_amp, x_wobble_freq, y_wobble_freq;
         let i = rand_int(32);
         if (i < 16) {
+            // Create a Curve Scene
             switch(i) {
                 case 0:
                     curve = 'hcrr';
@@ -338,14 +338,16 @@ function init() {
             scenes.push(s);
         }
         else {
+            // Create an Atom Scene
             let atoms = [];
-            let atom_count = rand_in_range(32, 192);
+            const pixel_count = canvas.width * canvas.height;
+            let atom_count = rand_in_range(pixel_count / 8192, pixel_count / 4096);
             for (let i = 0; i < atom_count; i++) {
                 const radius = rand_in_range(2,4);
                 const colour = `lch(50% 132 ${rand_int(360)})`;
                 const position = {x: Math.random(), y: Math.random()};
                 const velocity = {x: Math.random() * 0.006 - 0.003, y: Math.random() * 0.006 - 0.003};
-                const gravity = rand_int(200) + 5 * radius;
+                const gravity = 300 + 5 * radius;
                 atoms.push(new Atom(
                     radius,
                     colour,
