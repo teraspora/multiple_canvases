@@ -1,14 +1,6 @@
 // Main Javascript file for Multiple Canvases
 // John Lynch - January 2024
 
-let DEBUG = false;
-let available_videos = [...document.querySelectorAll('video')];
-const all_videos = available_videos;
-const rand_int = n => Math.floor(n * Math.random());
-const rand_in_range = (m, n) => Math.floor((n - m) * Math.random() + m);
-let show_curve_info = true;
-const toggle_curve_info = _ => show_curve_info = !show_curve_info;
-
 class Atom {
     // position and velocity should be abjects with keys x and y;
     // position values should be in the range [0, 1]; they will get multiplied by canvas dimensions in draw() method
@@ -38,7 +30,6 @@ class Scene {
     constructor(canvas) {
         this.id = Scene.instance_count++;
         this.canvas = canvas;
-        this.ctx = this.canvas.getContext("2d");
         this.width = this.canvas.width;
         this.height = this.canvas.height;
         this.progress = 0;
@@ -50,13 +41,30 @@ class Scene {
         this.progress += this.progress_delta;
     }
     test() {
+        // Insert test that works on any canvas type
+    }
+}
+
+class Scene2d extends Scene {
+    static instance_count = 0;
+    constructor(canvas) {
+        super(canvas);
+        this.ctx = this.canvas.getContext("2d");
+    }
+    render() {
+        super.render();
+    }
+    update(t) {
+        super.update();
+    }
+    test() {
         // Draw something simple and small, just to verify canvas drawability!
         this.ctx.fillStyle = `hsl(${Math.random() * 360} 100% 50%)`;
         this.ctx.fillRect(8, 8, 16, 16);
     }
 }
 
-class VideoScene extends Scene {
+class VideoScene extends Scene2d {
     constructor(canvas, video) {
         super(canvas);
         this.video = video;
@@ -77,7 +85,7 @@ class VideoScene extends Scene {
     }
 }
 
-class CurveScene extends Scene {            
+class CurveScene extends Scene2d {            
     // Curves
     static curves = {
         rhodonea: (k, amp, t) => [
@@ -184,7 +192,7 @@ class CurveScene extends Scene {
     }
 }
 
-class AtomScene extends Scene {
+class AtomScene extends Scene2d {
     constructor(canvas, atoms) {
         super(canvas);
         this.atoms = atoms;
@@ -261,46 +269,16 @@ class AtomScene extends Scene {
     }
 }
 
-// Top-level code
-let canvas_count = 9; // must be a perfect square!
-
-// Allow user to hit a digit key to refresh with a different number of canvases -
-// the square of the digit entered.
-// So, to get 16 canvases, hit 4, and to get 49, hit 7!
-window.addEventListener('keyup', event => {
-    if (!event.ctrlKey && !event.altKey) {
-        const char = event.key;
-        const digit = char.match(/\d/)?.input;
-        if (digit) {
-            canvas_count = digit * digit;
-            init();
-        }
-        else {
-            switch(char) {
-                // 
-                case 'c':
-                    // 'c' is standard for toggling subtitles on Youtube, so...
-                    toggle_curve_info();
-                    init()
-                    break;
-                default:
-            }
-        }
-    }
-});
-        
-window.addEventListener('resize', init);
-init();
-
 function init() {
     const scenes = [];
     const cols = Math.sqrt(canvas_count);
     const main = document.getElementById('main');
-    available_videos = all_videos;
+    const all_videos = [...document.querySelectorAll('video')];
+    let available_videos = all_videos;
     main.innerHTML = '';
     main.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     const {width: main_width, height: main_height} = main.getBoundingClientRect();
-    
+
     // Create an array of canvases and add each one to the DOM
     const canvases = Array(canvas_count).fill(0).map((_, i) => {
         const c = document.createElement('canvas');
@@ -314,6 +292,9 @@ function init() {
     // For each canvas, create a new Scene, and push the new Scene to an array of scenes.
     let curve, params;
     canvases.forEach((canvas, index) => {
+        if (Math.random() > 0.8) {
+            canvas.style.filter = filters[rand_int(filters.length)];
+        }
         let i = rand_int(24);
         if (i < 14) {
             // Create a Curve Scene
@@ -406,7 +387,9 @@ function init() {
         }
         else {
             // Create a video scene
-            if (!available_videos.length) available_videos = all_videos;    // used them up, so have to reuse them!
+            if (!available_videos.length) {
+                available_videos = all_videos;    // used them up, so have to reuse them!
+            }
             const index = rand_int(available_videos.length);
             const video = available_videos[index];
             // Remove the current video from the available list
@@ -426,3 +409,38 @@ function init() {
         scene.render();
     }
 }
+
+const DEBUG = false;
+const rand_int = n => Math.floor(n * Math.random());
+const rand_in_range = (m, n) => Math.floor((n - m) * Math.random() + m);
+let canvas_count = 16; // must be a perfect square!
+let show_curve_info = true;
+const toggle_curve_info = _ => show_curve_info = !show_curve_info;
+const filters = ['none', 'hue-rotate(45deg)', 'sepia(1)', 'invert(1)'];
+
+// Allow user to hit a digit key to refresh with a different number of canvases -
+// the square of the digit entered.
+// So, to get 16 (4x4)canvases, hit 4, and to get 49 (7x7), hit 7!
+window.addEventListener('keyup', event => {
+    if (!event.ctrlKey && !event.altKey) {
+        const char = event.key;
+        const digit = char.match(/\d/)?.input;
+        if (digit) {
+            canvas_count = digit * digit;
+            init();
+        }
+        else {
+            switch(char) {
+                // 
+                case 'c':
+                    // 'c' is standard for toggling subtitles on Youtube, so...
+                    toggle_curve_info();
+                    init()
+                    break;
+                default:
+            }
+        }
+    }
+});
+
+['load', 'resize'].forEach(event => window.addEventListener(event, init));
