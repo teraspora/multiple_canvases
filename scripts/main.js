@@ -2,6 +2,8 @@
 // John Lynch - January 2024
 
 let DEBUG = false;
+let available_videos = [...document.querySelectorAll('video')];
+const all_videos = available_videos;
 const rand_int = n => Math.floor(n * Math.random());
 const rand_in_range = (m, n) => Math.floor((n - m) * Math.random() + m);
 let show_curve_info = true;
@@ -51,6 +53,27 @@ class Scene {
         // Draw something simple and small, just to verify canvas drawability!
         this.ctx.fillStyle = `hsl(${Math.random() * 360} 100% 50%)`;
         this.ctx.fillRect(8, 8, 16, 16);
+    }
+}
+
+class VideoScene extends Scene {
+    constructor(canvas, video) {
+        super(canvas);
+        this.video = video;
+    }
+    render() {
+        super.render();
+        // Initiate playing video
+        this.video.play();
+        requestAnimationFrame(this.update.bind(this));
+    }
+    update(t) {
+        super.update();
+        if (!this.video.paused && !this.video.ended) {
+            // Display next frame
+            this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+        }
+        requestAnimationFrame(this.update.bind(this));
     }
 }
 
@@ -273,6 +296,7 @@ function init() {
     const scenes = [];
     const cols = Math.sqrt(canvas_count);
     const main = document.getElementById('main');
+    available_videos = all_videos;
     main.innerHTML = '';
     main.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     const {width: main_width, height: main_height} = main.getBoundingClientRect();
@@ -289,11 +313,11 @@ function init() {
 
     // For each canvas, create a new Scene, and push the new Scene to an array of scenes.
     let curve, params;
-    canvases.forEach(canvas => {
-        let amp, k, a, b, c, r, density, freq, x_wobble_amp, y_wobble_amp, x_wobble_freq, y_wobble_freq, offset_x;
+    canvases.forEach((canvas, index) => {
         let i = rand_int(24);
-        if (i < 16) {
+        if (i < 14) {
             // Create a Curve Scene
+            let amp, k, a, b, c, r, density, x_wobble_amp, y_wobble_amp, x_wobble_freq, y_wobble_freq;
             switch(i) {
                 case 0:
                     curve = 'hcrr';
@@ -355,7 +379,7 @@ function init() {
             const s = new CurveScene(canvas, curve, params, canvas_count < 5 ? 1 : rand_in_range(1, 3));
             scenes.push(s);
         }
-        else {
+        else if (i < 20) {
             // Create an Atom Scene
             let atoms = [];
             const pixel_count = canvas.width * canvas.height;
@@ -378,6 +402,16 @@ function init() {
                 ));
             }
             const s = new AtomScene(canvas, atoms);
+            scenes.push(s);
+        }
+        else {
+            // Create a video scene
+            if (!available_videos.length) available_videos = all_videos;    // used them up, so have to reuse them!
+            const index = rand_int(available_videos.length);
+            const video = available_videos[index];
+            // Remove the current video from the available list
+            available_videos = available_videos.filter(v => v != video);
+            const s = new VideoScene(canvas, video);
             scenes.push(s);
         }
 
