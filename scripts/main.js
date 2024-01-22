@@ -25,7 +25,9 @@ class Atom {
         ctx.beginPath();
         ctx.fillStyle = this.colour;
         ctx.arc(this.position.x * ctx.canvas.width, this.position.y * ctx.canvas.height, this.radius, 0, 2 * Math.PI);
-        ctx.fill(); 
+        ctx.fill();
+        ctx.strokeStyle = '#fda';
+        ctx.stroke(); 
     }
 }
 
@@ -219,6 +221,12 @@ class AtomScene extends Scene {
                 this.ctx.moveTo(atom_a.position.x * this.width, atom_a.position.y * this.height);
                 this.ctx.lineTo(atom_b.position.x * this.width, atom_b.position.y * this.height);
                 this.ctx.stroke();
+                if (proximity <= atom_a.radius + atom_b.radius) {
+                    atom_a.velocity.x *= -1;
+                    atom_a.velocity.y *= -1;
+                    atom_b.velocity.x *= -1;
+                    atom_b.velocity.y *= -1;
+                }
             }
         }
         // Finally, draw the atoms themselves      
@@ -231,8 +239,7 @@ class AtomScene extends Scene {
 }
 
 // Top-level code
-let canvas_count = 16; // must be a perfect square!
-init();
+let canvas_count = 9; // must be a perfect square!
 
 // Allow user to hit a digit key to refresh with a different number of canvases -
 // the square of the digit entered.
@@ -258,8 +265,9 @@ window.addEventListener('keyup', event => {
         }
     }
 });
-
+        
 window.addEventListener('resize', init);
+init();
 
 function init() {
     const scenes = [];
@@ -352,12 +360,15 @@ function init() {
             let atoms = [];
             const pixel_count = canvas.width * canvas.height;
             let atom_count = rand_in_range(pixel_count / 8192, pixel_count / 4096);
+            // if (canvases.length == 1) {
+            //     atom_count *= 3;
+            // }
             for (let i = 0; i < atom_count; i++) {
-                const radius = rand_in_range(2,4);
+                const radius = rand_in_range(2,11);
                 const colour = `lch(50% 132 ${rand_int(360)})`;
                 const position = {x: Math.random(), y: Math.random()};
                 const velocity = {x: Math.random() * 0.006 - 0.003, y: Math.random() * 0.006 - 0.003};
-                const gravity = 300 + 5 * radius;
+                const gravity = canvas.width / 2;
                 atoms.push(new Atom(
                     radius,
                     colour,
