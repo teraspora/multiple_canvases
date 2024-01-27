@@ -33,8 +33,13 @@ aside#help {
     height: 5em;
     display: none;
 }
+aside#help * {
+    background-color: #222;
+}
 .close {
     position: absolute;
-    right: 2vw;
-    top: 1vw;
+    right: 0.3vw;
+    top: 0.2vw;
+    font-size: 1vw;
+    cursor: pointer;
 }

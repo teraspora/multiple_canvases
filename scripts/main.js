@@ -270,6 +270,9 @@ class AtomScene extends Scene2d {
 }
 
 function init() {
+    if (debug) {
+        canvas_count = 4;
+    }
     const scenes = [];
     const cols = Math.sqrt(canvas_count);
     const main = document.getElementById('main');
@@ -290,13 +293,13 @@ function init() {
     });
 
     // For each canvas, create a new Scene, and push the new Scene to an array of scenes.
-    let curve, params;
+    let curve, params, scene;
     canvases.forEach((canvas, index) => {
         if (Math.random() > 0.8) {
             canvas.style.filter = filters[rand_int(filters.length)];
         }
         let i = rand_int(24);
-        if (i < 14) {
+        if (i < 14 && !debug) {
             // Create a Curve Scene
             let amp, k, a, b, c, r, density, x_wobble_amp, y_wobble_amp, x_wobble_freq, y_wobble_freq;
             switch(i) {
@@ -357,10 +360,10 @@ function init() {
                     break;
                 }
 
-            const s = new CurveScene(canvas, curve, params, canvas_count < 5 ? 1 : rand_in_range(1, 3));
-            scenes.push(s);
+            scene = new CurveScene(canvas, curve, params, canvas_count < 5 ? 1 : rand_in_range(1, 3));
+            scenes.push(scene);
         }
-        else if (i < 20) {
+        else if (i < 20 || debug) {
             // Create an Atom Scene
             let atoms = [];
             const pixel_count = canvas.width * canvas.height;
@@ -382,8 +385,8 @@ function init() {
                     gravity
                 ));
             }
-            const s = new AtomScene(canvas, atoms);
-            scenes.push(s);
+            scene = new AtomScene(canvas, atoms);
+            scenes.push(scene);
         }
         else {
             // Create a video scene
@@ -394,13 +397,13 @@ function init() {
             const video = available_videos[index];
             // Remove the current video from the available list
             available_videos = available_videos.filter(v => v != video);
-            const s = new VideoScene(canvas, video);
-            scenes.push(s);
+            scene = new VideoScene(canvas, video);
+            scenes.push(scene);
         }
 
-        if (DEBUG) {
+        if (debug) {
             // test() method should draw something simple and small, just to verify canvas drawability!
-            s.test();
+            scene.test();
         }
     });
     
@@ -410,12 +413,16 @@ function init() {
     }
 }
 
-const DEBUG = false;
+// Top-level code
+let debug = true;
+const default_canvas_count = 16; // must be a perfect square!
+const help = document.querySelector('aside#help');
 const rand_int = n => Math.floor(n * Math.random());
 const rand_in_range = (m, n) => Math.floor((n - m) * Math.random() + m);
-let canvas_count = 16; // must be a perfect square!
+let canvas_count = default_canvas_count;
 let show_curve_info = true;
 const toggle_curve_info = _ => show_curve_info = !show_curve_info;
+const toggle_debug = _ => debug = !debug;
 const filters = ['none', 'hue-rotate(45deg)', 'sepia(1)', 'invert(1)'];
 
 // Allow user to hit a digit key to refresh with a different number of canvases -
@@ -437,10 +444,24 @@ window.addEventListener('keyup', event => {
                     toggle_curve_info();
                     init()
                     break;
+                case 'd':
+                    // 'c' is standard for toggling subtitles on Youtube, so...
+                    toggle_debug();
+                    canvas_count = default_canvas_count;
+                    init();
+                    break;
+                case 'h':
+                    // 
+                    help.style.display = 'block';
+                    break;
                 default:
             }
         }
     }
+});
+
+document.getElementById('close-help').addEventListener('click', _ => {
+    help.style.display = 'none';
 });
 
 ['load', 'resize'].forEach(event => window.addEventListener(event, init));
