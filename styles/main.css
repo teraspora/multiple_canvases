@@ -22,24 +22,96 @@ canvas {
 }
 aside#help {
     position: fixed;
-    left: 40vw;
-    top: 30vh;
-    padding: 1vw;
-    background-color: #222;
-    color: #fda;
-    border: 1px solid #00ccff;
-    border-radius: 5px;
-    width: 30em;
-    height: 5em;
+    left: 50%;
+    top: 8vh;
+    transform: translateX(-50%);
+    padding: 1.2rem;
+    background: rgba(10, 12, 20, 0.75);
+    color: #fdf6e3;
+    border: 1px solid rgba(0, 204, 255, 0.25);
+    border-radius: 12px;
+    width: min(48rem, 90vw);
+    max-height: 70vh;
+    overflow: auto;
     display: none;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,204,255,0.05) inset;
+    backdrop-filter: blur(6px) saturate(1.1);
+    transition: transform 180ms ease, opacity 180ms ease;
+    font-size: 0.95rem;
+    line-height: 1.4;
 }
+
+aside#help h4 { 
+    margin: 0 0 0.4rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+aside#help h4::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    background: linear-gradient(45deg, #00ccff, #7a5cff);
+    border-radius: 3px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+aside#help p { 
+    margin: 0 0 0.5rem 0; 
+    color: #cfefff; 
+}
+
+aside#help ul { 
+    text-align: left; 
+    padding-left: 1.2rem; 
+    margin: 0; 
+}
+
+/* Align key label and description into two columns so multi-line descriptions line up */
+aside#help li { 
+    display: grid; 
+    grid-template-columns: auto 1fr; 
+    gap: 0.6rem; 
+    margin: 0.35rem 0; 
+    align-items: start; 
+}
+
+aside#help strong { 
+    /* Make key look like a compact keycap */
+    width: 2.1rem;
+    display: inline-grid;
+    place-items: center;
+    text-align: center; 
+    background: linear-gradient(180deg,#111,#222);
+    color: #fff; 
+    padding: 0.18rem 0.36rem; 
+    border-radius: 6px; 
+    font-weight: 700; 
+    box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset; 
+}
+
 aside#help * {
-    background-color: #222;
+    background: transparent;
 }
+
 .close {
     position: absolute;
-    right: 0.3vw;
-    top: 0.2vw;
-    font-size: 1vw;
+    right: 0.6rem;
+    top: 0.5rem;
+    width: 1.6rem;
+    height: 1.6rem;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    color: #fda;
+    font-size: 0.95rem;
     cursor: pointer;
+    transition: transform 120ms ease, background 120ms ease;
+}
+
+.close:hover {
+    transform: rotate(90deg) scale(1.05);
+    background: rgba(255,255,255,0.12);
 }

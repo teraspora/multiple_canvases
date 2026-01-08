@@ -2,7 +2,7 @@
 // John Lynch - January 2024
 
 class Atom {
-    // position and velocity should be abjects with keys x and y;
+    // position and velocity should be objects with keys x and y;
     // position values should be in the range [0, 1]; they will get multiplied by canvas dimensions in draw() method
     // velocity is also as a proportion of canvas dimensions
     // gravity specifies the level of attraction  to other atoms; how close they need to be, in pixels, to connect
@@ -298,8 +298,9 @@ function init() {
         if (Math.random() > 0.8) {
             canvas.style.filter = filters[rand_int(filters.length)];
         }
+        
         let i = rand_int(24);
-        if (i < 14 && !debug) {
+        if (scene_type == "curve" || (scene_type == "random" && i < 14 && !debug)) {
             // Create a Curve Scene
             let amp, k, a, b, c, r, density, x_wobble_amp, y_wobble_amp, x_wobble_freq, y_wobble_freq;
             switch(i) {
@@ -363,7 +364,7 @@ function init() {
             scene = new CurveScene(canvas, curve, params, canvas_count < 5 ? 1 : rand_in_range(1, 3));
             scenes.push(scene);
         }
-        else if (i < 20 || debug) {
+        else if (scene_type == "atom" || (scene_type == "random" && i < 20 || debug)) {
             // Create an Atom Scene
             let atoms = [];
             const pixel_count = canvas.width * canvas.height;
@@ -388,7 +389,7 @@ function init() {
             scene = new AtomScene(canvas, atoms);
             scenes.push(scene);
         }
-        else {
+        else if (scene_type == "video" || (scene_type == "random" && i >= 20)) {
             // Create a video scene
             if (!available_videos.length) {
                 available_videos = all_videos;    // used them up, so have to reuse them!
@@ -415,6 +416,7 @@ function init() {
 
 // Top-level code
 let debug = false;
+let scene_type = 'random';
 const default_canvas_count = 16; // must be a perfect square!
 const help = document.querySelector('aside#help');
 const rand_int = n => Math.floor(n * Math.random());
@@ -445,14 +447,39 @@ window.addEventListener('keyup', event => {
                     init()
                     break;
                 case 'd':
-                    // 'c' is standard for toggling subtitles on Youtube, so...
+                    // 'd' for debug
                     toggle_debug();
                     canvas_count = default_canvas_count;
                     init();
                     break;
                 case 'h':
-                    // 
+                    // 'h' for help
                     help.style.display = 'block';
+                    document.addEventListener('keyup', event => {
+                       if (event.key == "Escape") {
+                            help.style.display = 'none';
+                       }
+                    });
+                    break;
+                case 'a':
+                    // 'a' for all Atom Scenes
+                    scene_type = "atom";
+                    init();
+                    break;
+                case 'u':
+                    // 'u' for all Curve Scenes
+                    scene_type = "curve";
+                    init();
+                    break;
+                case 'v':
+                    // 'v' for all Video Scenes
+                    scene_type = "video";
+                    init();
+                    break;
+                case 'r':
+                    // 'r' for random Scenes
+                    scene_type = "random";
+                    init();
                     break;
                 default:
             }
